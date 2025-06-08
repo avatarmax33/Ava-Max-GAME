@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Ava Max Quiz Game</title>
+
+  <style>
+
+    body {
+
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+      margin: 0;
+
+      padding: 0;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      height: 100vh;
+
+      transition: background 0.6s;
+
+    }
+
+    #game {
+
+      background: rgba(0, 0, 0, 0.65);
+
+      padding: 20px;
+
+      border-radius: 15px;
+
+      width: 360px;
+
+      box-shadow: 0 0 20px #ffffff;
+
+      color: #fff;
+
+      text-align: center;
+
+    }
+
+    h1 {
+
+      margin-bottom: 10px;
+
+      font-size: 1.5rem;
+
+    }
+
+    .question {
+
+      font-size: 1rem;
+
+      margin-bottom: 15px;
+
+    }
+
+    .answers button {
+
+      background: #555;
+
+      border: none;
+
+      color: white;
+
+      font-size: 0.9rem;
+
+      padding: 10px;
+
+      margin: 5px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      width: 100px;
+
+      transition: background 0.3s;
+
+    }
+
+    .answers button:hover {
+
+      background: #f4d35e;
+
+      color: #000;
+
+    }
+
+    #score {
+
+      font-size: 0.9rem;
+
+      margin-top: 15px;
+
+    }
+
+    #stage {
+
+      font-size: 0.85rem;
+
+      margin-bottom: 10px;
+
+    }
+
+    #result {
+
+      font-size: 1rem;
+
+      margin-top: 15px;
+
+    }
+
+    #restartBtn {
+
+      margin-top: 15px;
+
+      background: #f4d35e;
+
+      color: #220046;
+
+      font-weight: bold;
+
+      padding: 10px 15px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      border: none;
+
+    }
+
+    #restartBtn:hover {
+
+      background: #c43f88;
+
+      color: white;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div id="game">
+
+  <h1>Ava Max Quiz Game</h1>
+
+  <div id="stage">Stage 1 / 5</div>
+
+  <div class="question" id="questionText">Loading...</div>
+
+  <div class="answers">
+
+    <button id="btnA">A</button>
+
+    <button id="btnB">B</button>
+
+    <button id="btnC">C</button>
+
+  </div>
+
+  <div id="score">Score: 0</div>
+
+  <div id="result"></div>
+
+  <button id="restartBtn" style="display:none;">Restart Game</button>
+
+</div>
+
+<audio id="soundEffect"></audio>
+
+<script>
+
+  const stageThemes = [
+
+    "#5d2b8a", // Stage 1
+
+    "#003049", // Stage 2
+
+    "#1d3557", // Stage 3
+
+    "#0b3d91", // Stage 4
+
+    "#212529"  // Stage 5
+
+  ];
+
+  const questions = [
+
+    { question: "What is Ava Max's real first name?", choices: { A: "Amanda", B: "Amanda Koci", C: "Amanda Ava" }, answer: "B" },
+
+    { question: "Which song made Ava Max famous?", choices: { A: "Salt", B: "Kings & Queens", C: "Sweet but Psycho" }, answer: "C" },
+
+    { question: "What color is Ava Max's signature hair?", choices: { A: "Red", B: "Blonde", C: "Black" }, answer: "B" },
+
+    { question: "Where was Ava Max born?", choices: { A: "UK", B: "Albania", C: "USA" }, answer: "B" },
+
+    { question: "What hairstyle is Ava Max known for?", choices: { A: "Curly", B: "Split hair", C: "Ponytail" }, answer: "B" },
+
+    { question: "Which album is Ava Max's debut?", choices: { A: "Diamonds & Gold", B: "Heaven & Hell", C: "Stars & Moon" }, answer: "B" },
+
+    { question: "What year was 'Sweet but Psycho' released?", choices: { A: "2018", B: "2020", C: "2019" }, answer: "A" },
+
+    { question: "What is Ava Max’s vocal range?", choices: { A: "Tenor", B: "Soprano", C: "Alto" }, answer: "B" },
+
+    { question: "Which genre best fits Ava Max's music?", choices: { A: "Pop", B: "Rock", C: "Country" }, answer: "A" },
+
+    { question: "What symbol is often in Ava Max’s branding?", choices: { A: "Heart", B: "Split hair", C: "Star" }, answer: "B" }
+
+  ];
+
+  const soundEffects = [
+
+    'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg',
+
+    'https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg',
+
+    'https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg',
+
+    'https://actions.google.com/sounds/v1/cartoon/boing.ogg',
+
+    'https://actions.google.com/sounds/v1/cartoon/pop.ogg',
+
+  ];
+
+  let currentQuestionIndex = 0;
+
+  let score = 0;
+
+  const questionsPerStage = 2;
+
+  const stageElem = document.getElementById('stage');
+
+  const questionTextElem = document.getElementById('questionText');
+
+  const btnA = document.getElementById('btnA');
+
+  const btnB = document.getElementById('btnB');
+
+  const btnC = document.getElementById('btnC');
+
+  const scoreElem = document.getElementById('score');
+
+  const resultElem = document.getElementById('result');
+
+  const restartBtn = document.getElementById('restartBtn');
+
+  const soundEffect = document.getElementById('soundEffect');
+
+  function updateStage() {
+
+    let stageNumber = Math.floor(currentQuestionIndex / questionsPerStage);
+
+    document.body.style.background = stageThemes[stageNumber % stageThemes.length];
+
+    stageElem.textContent = `Stage ${stageNumber + 1} / ${stageThemes.length}`;
+
+  }
+
+  function loadQuestion() {
+
+    const q = questions[currentQuestionIndex];
+
+    updateStage();
+
+    questionTextElem.textContent = q.question;
+
+    btnA.textContent = "A: " + q.choices.A;
+
+    btnB.textContent = "B: " + q.choices.B;
+
+    btnC.textContent = "C: " + q.choices.C;
+
+    resultElem.textContent = "";
+
+  }
+
+  function playSound() {
+
+    const idx = Math.floor(Math.random() * soundEffects.length);
+
+    soundEffect.src = soundEffects[idx];
+
+    soundEffect.play();
+
+  }
+
+  function checkAnswer(chosen) {
+
+    const correct = questions[currentQuestionIndex].answer;
+
+    if (chosen === correct) {
+
+      score += 10;
+
+      resultElem.style.color = '#00ff00';
+
+      resultElem.textContent = "Correct! +10 points";
+
+      playSound();
+
+    } else {
+
+      score -= 10;
+
+      resultElem.style.color = '#ff4444';
+
+      resultElem.textContent = `Wrong! -10 points. Correct: ${correct}`;
+
+    }
+
+    scoreElem.textContent = "Score: " + score;
+
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex >= questions.length) {
+
+      setTimeout(() => {
+
+        questionTextElem.textContent = `Game Over! Your final score: ${score}`;
+
+        btnA.style.display = 'none';
+
+        btnB.style.display = 'none';
+
+        btnC.style.display = 'none';
+
+        stageElem.textContent = '';
+
+        resultElem.textContent = '';
+
+        restartBtn.style.display = 'inline-block';
+
+      }, 1000);
+
+    } else {
+
+      setTimeout(loadQuestion, 1000);
+
+    }
+
+  }
+
+  btnA.onclick = () => checkAnswer('A');
+
+  btnB.onclick = () => checkAnswer('B');
+
+  btnC.onclick = () => checkAnswer('C');
+
+  restartBtn.onclick = () => {
+
+    currentQuestionIndex = 0;
+
+    score = 0;
+
+    btnA.style.display = 'inline-block';
+
+    btnB.style.display = 'inline-block';
+
+    btnC.style.display = 'inline-block';
+
+    restartBtn.style.display = 'none';
+
+    scoreElem.textContent = "Score: 0";
+
+    loadQuestion();
+
+  };
+
+  loadQuestion();
+
+</script>
+
+</body>
+
+</html>
